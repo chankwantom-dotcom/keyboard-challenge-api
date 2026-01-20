@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-Z Challenge - Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        h1 {
+            color: #0f0;
+            font-size: 1.8rem;
+        }
+        
+        .player-info {
+            color: #888;
+            font-size: 1rem;
+        }
+        
+        #current-letter {
+            font-size: 8rem;
+            font-weight: bold;
+            color: #0f0;
+            margin: 30px 0;
+            text-shadow: 0 0 20px #0f0;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #letter-sequence {
+            font-size: 1.8rem;
+            letter-spacing: 8px;
+            margin: 20px 0;
+            color: #555;
+            min-height: 60px;
+            line-height: 1.8;
+        }
+        
+        .letter-correct {
+            color: #0f0;
+        }
+        
+        .letter-current {
+            color: #fff;
+            background: #222;
+            padding: 0 5px;
+        }
+        
+        .letter-future {
+            color: #555;
+        }
+        
+        #input-field {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.8rem;
+            background: #111;
+            color: #0f0;
+            border: 3px solid #333;
+            text-align: center;
+            margin: 30px 0;
+            outline: none;
+            letter-spacing: 5px;
+        }
+        
+        #input-field:focus {
+            border-color: #0f0;
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .stat {
+            background: #111;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            color: #0f0;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 8px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 1rem;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #444;
+            border-color: #0f0;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #restart-btn {
+            background: #333;
+        }
+        
+        #back-btn {
+            background: #555;
+        }
+        
+        .game-status {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            background: #111;
+            color: #888;
+        }
+        
+        .game-status.active {
+            border-color: #0f0;
+            color: #0f0;
+        }
+        
+        .game-status.finished {
+            border-color: #ff0;
+            color: #ff0;
+        }
+        
+        .share-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            background: #111;
+        }
+        
+        .share-section h3 {
+            color: #0f0;
+            margin-bottom: 15px;
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .share-btn {
+            padding: 10px 20px;
+            background: #222;
+            color: #fff;
+            border: 1px solid #555;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .share-btn:hover {
+            background: #333;
+            border-color: #0f0;
+        }
+        
+        .share-btn.facebook {
+            background: #1877F2;
+        }
+        
+        .share-btn.twitter {
+            background: #1DA1F2;
+        }
+        
+        .share-btn.whatsapp {
+            background: #25D366;
+        }
+        
+        .share-btn.copy {
+            background: #666;
+        }
+        
+        .leaderboard {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .leaderboard h3 {
+            color: #0f0;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        #leaderboard-list {
+            list-style: none;
+        }
+        
+        #leaderboard-list li {
+            padding: 12px;
+            background: #111;
+            margin-bottom: 8px;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .rank {
+            color: #ff0;
+            font-weight: bold;
+            min-width: 40px;
+        }
+        
+        .player {
+            flex-grow: 1;
+            text-align: left;
+            margin-left: 15px;
+        }
+        
+        .time {
+            color: #0f0;
+            font-weight: bold;
+            min-width: 100px;
+            text-align: right;
+        }
+        
+        .api-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            background: #111;
+            border: 1px solid #333;
+            color: #0f0;
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+        
+        .language-switch {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+        }
+        
+        .language-switch button {
+            padding: 8px 15px;
+            background: #111;
+            color: #888;
+            border: 1px solid #333;
+            cursor: pointer;
+        }
+        
+        .language-switch button.active {
+            color: #0f0;
+            border-color: #0f0;
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            #current-letter {
+                font-size: 5rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .share-buttons {
+                flex-direction: column;
+            }
+            
+            .share-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="api-status" id="apiStatus">API: Connecting...</div>
+    <div class="language-switch">
+        <button class="active">EN</button>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>A-Z ULTIMATE TYPING CHALLENGE</h1>
+            <div class="player-info">Player: <span id="playerName">Loading...</span></div>
+        </div>
+        
+        <div id="current-letter">A</div>
+        
+        <div id="letter-sequence">
+            <span class="letter-correct"></span>
+            <span class="letter-current">A</span>
+            <span class="letter-future">B C D E F G H I J K L M N O P Q R S T U V W X Y Z</span>
+        </div>
+        
+        <input type="text" id="input-field" autocomplete="off" autofocus>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="timer">0.000</div>
+                <div class="stat-label">TIME (seconds)</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="progress">0%</div>
+                <div class="stat-label">PROGRESS</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="accuracy">100%</div>
+                <div class="stat-label">ACCURACY</div>
+            </div>
+        </div>
+        
+        <div class="game-status" id="gameStatus">
+            Waiting to start: Type the first letter "A"
+        </div>
+        
+        <div class="share-section" id="shareSection" style="display: none;">
+            <h3>🎉 SHARE YOUR SCORE!</h3>
+            <p id="shareText">I just completed the A-Z challenge in <span id="shareTime">0.000</span> seconds!</p>
+            <div class="share-buttons">
+                <button class="share-btn facebook" onclick="shareToFacebook()">
+                    <span>Facebook</span>
+                </button>
+                <button class="share-btn twitter" onclick="shareToTwitter()">
+                    <span>Twitter</span>
+                </button>
+                <button class="share-btn whatsapp" onclick="shareToWhatsApp()">
+                    <span>WhatsApp</span>
+                </button>
+                <button class="share-btn copy" onclick="copyScoreLink()">
+                    <span>Copy Link</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="restart-btn">RESTART CHALLENGE</button>
+            <button id="back-btn">BACK TO LOGIN</button>
+        </div>
+        
+        <div class="leaderboard">
+            <h3>🏆 GLOBAL LEADERBOARD (Fastest Times)</h3>
+            <ul id="leaderboard-list">
+                <li>Loading...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        const API_CONFIG = {
+            BASE_URL: 'https://keyboard-challenge-api.onrender.com',
+            ENABLED: true,
+            TIMEOUT: 5000
+        };
+        
+        const GAME_CONFIG = {
+            LETTERS: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            AUTO_START: true,
+            AUTO_SUBMIT: true
+        };
+        
+        // ==================== GAME STATE ====================
+        let gameState = {
+            active: false,
+            startTime: null,
+            endTime: null,
+            currentIndex: 0,
+            correctInputs: 0,
+            totalInputs: 0,
+            username: '',
+            letters: GAME_CONFIG.LETTERS.split(''),
+            timerInterval: null,
+            finalTime: 0
+        };
+        
+        // ==================== DOM ELEMENTS ====================
+        const elements = {
+            currentLetter: document.getElementById('current-letter'),
+            letterSequence: document.getElementById('letter-sequence'),
+            inputField: document.getElementById('input-field'),
+            timer: document.getElementById('timer'),
+            progress: document.getElementById('progress'),
+            accuracy: document.getElementById('accuracy'),
+            gameStatus: document.getElementById('gameStatus'),
+            playerName: document.getElementById('playerName'),
+            restartBtn: document.getElementById('restart-btn'),
+            backBtn: document.getElementById('back-btn'),
+            apiStatus: document.getElementById('apiStatus'),
+            leaderboardList: document.getElementById('leaderboard-list'),
+            shareSection: document.getElementById('share-section'),
+            shareText: document.getElementById('shareText'),
+            shareTime: document.getElementById('shareTime'),
+            shareSection: document.getElementById('shareSection')
+        };
+        
+        // ==================== INITIALIZATION ====================
+        async function initGame() {
+            // 1. Get player name
+            gameState.username = localStorage.getItem('typingUsername');
+            if (!gameState.username) {
+                alert('Please login first!');
+                window.location.href = 'index.html';
+                return;
+            }
+            elements.playerName.textContent = gameState.username;
+            
+            // 2. Check API status
+            await checkApiStatus();
+            
+            // 3. Load leaderboard
+            await loadLeaderboard();
+            
+            // 4. Initialize game display
+            updateLetterDisplay();
+            elements.inputField.focus();
+            
+            // 5. Bind events
+            bindEvents();
+        }
+        
+        // ==================== API FUNCTIONS ====================
+        async function checkApiStatus() {
+            if (!API_CONFIG.ENABLED) {
+                elements.apiStatus.textContent = 'API: Offline Mode';
+                elements.apiStatus.style.color = '#888';
+                return false;
+            }
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
+                
+                const response = await fetch(`${API_CONFIG.BASE_URL}/health`, {
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    elements.apiStatus.textContent = 'API: Online ✓';
+                    elements.apiStatus.style.color = '#0f0';
+                    return true;
+                }
+            } catch (error) {
+                console.warn('API connection failed, using local mode:', error);
+                elements.apiStatus.textContent = 'API: Offline Mode';
+                elements.apiStatus.style.color = '#f00';
+                API_CONFIG.ENABLED = false;
+            }
+            return false;
+        }
+        
+        async function submitScore(timeInSeconds) {
+            if (!API_CONFIG.ENABLED) {
+                saveScoreLocally(timeInSeconds);
+                return { success: false, local: true };
+            }
+            
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/api/score`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: gameState.username,
+                        time: timeInSeconds,
+                        accuracy: calculateAccuracy(),
+                        date: new Date().toISOString()
+                    })
+                });
+                
+                if (response.ok) {
+                    return { success: true };
+                }
+            } catch (error) {
+                console.warn('Score submission failed, saving locally:', error);
+                saveScoreLocally(timeInSeconds);
+                return { success: false, local: true };
+            }
+            
+            return { success: false };
+        }
+        
+        async function loadLeaderboard() {
+            // Try API first
+            if (API_CONFIG.ENABLED) {
+                try {
+                    const response = await fetch(`${API_CONFIG.BASE_URL}/api/leaderboard`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.leaderboard && data.leaderboard.length > 0) {
+                            displayLeaderboard(data.leaderboard);
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Failed to load API leaderboard:', error);
+                }
+            }
+            
+            // Load local leaderboard
+            loadLocalLeaderboard();
+        }
+        
+        function saveScoreLocally(timeInSeconds) {
+            const scores = JSON.parse(localStorage.getItem('localTypingScores') || '[]');
+            scores.push({
+                name: gameState.username,
+                time: timeInSeconds,
+                accuracy: calculateAccuracy(),
+                date: new Date().toISOString()
+            });
+            
+            scores.sort((a, b) => a.time - b.time);
+            const topScores = scores.slice(0, 50);
+            localStorage.setItem('localTypingScores', JSON.stringify(topScores));
+            
+            displayLeaderboard(topScores);
+        }
+        
+        function loadLocalLeaderboard() {
+            const scores = JSON.parse(localStorage.getItem('localTypingScores') || '[]');
+            displayLeaderboard(scores);
+        }
+        
+        function displayLeaderboard(scores) {
+            if (!scores || scores.length === 0) {
+                elements.leaderboardList.innerHTML = '<li>No records yet. Be the first challenger!</li>';
+                return;
+            }
+            
+            scores.sort((a, b) => a.time - b.time);
+            
+            elements.leaderboardList.innerHTML = '';
+            scores.slice(0, 20).forEach((score, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="rank">#${index + 1}</span>
+                    <span class="player">${score.name}</span>
+                    <span class="time">${score.time.toFixed(3)}s</span>
+                `;
+                elements.leaderboardList.appendChild(li);
+            });
+        }
+        
+        // ==================== GAME LOGIC ====================
+        function startGame() {
+            if (gameState.active) return;
+            
+            gameState.active = true;
+            gameState.startTime = performance.now();
+            gameState.endTime = null;
+            
+            elements.gameStatus.textContent = 'Challenge in progress...';
+            elements.gameStatus.className = 'game-status active';
+            
+            gameState.timerInterval = setInterval(updateTimer, 10);
+            
+            updateLetterDisplay();
+        }
+        
+        function endGame() {
+            if (!gameState.active) return;
+            
+            gameState.active = false;
+            gameState.endTime = performance.now();
+            
+            clearInterval(gameState.timerInterval);
+            
+            const totalTime = (gameState.endTime - gameState.startTime) / 1000;
+            gameState.finalTime = totalTime;
+            
+            elements.gameStatus.textContent = `Challenge complete! Time: ${totalTime.toFixed(3)} seconds`;
+            elements.gameStatus.className = 'game-status finished';
+            
+            elements.inputField.disabled = true;
+            
+            // Show share section
+            elements.shareTime.textContent = totalTime.toFixed(3);
+            elements.shareSection.style.display = 'block';
+            
+            if (GAME_CONFIG.AUTO_SUBMIT) {
+                submitScore(totalTime).then(result => {
+                    if (result.success) {
+                        elements.gameStatus.textContent += ' (Score submitted)';
+                    } else if (result.local) {
+                        elements.gameStatus.textContent += ' (Score saved locally)';
+                    }
+                    loadLeaderboard();
+                });
+            }
+        }
+        
+        function resetGame() {
+            gameState.active = false;
+            gameState.startTime = null;
+            gameState.endTime = null;
+            gameState.currentIndex = 0;
+            gameState.correctInputs = 0;
+            gameState.totalInputs = 0;
+            
+            clearInterval(gameState.timerInterval);
+            
+            elements.timer.textContent = '0.000';
+            elements.progress.textContent = '0%';
+            elements.accuracy.textContent = '100%';
+            elements.inputField.value = '';
+            elements.inputField.disabled = false;
+            elements.gameStatus.textContent = 'Waiting to start: Type the first letter "A"';
+            elements.gameStatus.className = 'game-status';
+            
+            // Hide share section
+            elements.shareSection.style.display = 'none';
+            
+            updateLetterDisplay();
+            
+            elements.inputField.focus();
+        }
+        
+        function updateTimer() {
+            if (!gameState.active || !gameState.startTime) return;
+            
+            const currentTime = performance.now();
+            const elapsed = (currentTime - gameState.startTime) / 1000;
+            elements.timer.textContent = elapsed.toFixed(3);
+        }
+        
+        function updateLetterDisplay() {
+            const currentLetter = gameState.letters[gameState.currentIndex];
+            
+            elements.currentLetter.textContent = currentLetter;
+            
+            const correctLetters = gameState.letters.slice(0, gameState.currentIndex);
+            const futureLetters = gameState.letters.slice(gameState.currentIndex + 1);
+            
+            elements.letterSequence.innerHTML = `
+                <span class="letter-correct">${correctLetters.join(' ')}${correctLetters.length > 0 ? ' ' : ''}</span>
+                <span class="letter-current">${currentLetter}</span>
+                <span class="letter-future">${futureLetters.length > 0 ? ' ' + futureLetters.join(' ') : ''}</span>
+            `;
+            
+            const progress = Math.round((gameState.currentIndex / gameState.letters.length) * 100);
+            elements.progress.textContent = `${progress}%`;
+        }
+        
+        function calculateAccuracy() {
+            return gameState.totalInputs > 0 ? 
+                Math.round((gameState.correctInputs / gameState.totalInputs) * 100) : 100;
+        }
+        
+        function handleInput(event) {
+            const input = event.target.value.toUpperCase();
+            
+            if (!input) return;
+            
+            const expectedLetter = gameState.letters[gameState.currentIndex];
+            gameState.totalInputs++;
+            
+            if (input === expectedLetter) {
+                gameState.correctInputs++;
+                
+                if (gameState.currentIndex === 0 && !gameState.active && GAME_CONFIG.AUTO_START) {
+                    startGame();
+                }
+                
+                gameState.currentIndex++;
+                
+                if (gameState.currentIndex >= gameState.letters.length) {
+                    endGame();
+                } else {
+                    updateLetterDisplay();
+                }
+                
+                event.target.value = '';
+                
+                elements.accuracy.textContent = `${calculateAccuracy()}%`;
+            } else {
+                event.target.value = '';
+                elements.accuracy.textContent = `${calculateAccuracy()}%`;
+            }
+        }
+        
+        // ==================== SHARE FUNCTIONS ====================
+        function shareToFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent(`I just completed the A-Z Typing Challenge in ${gameState.finalTime.toFixed(3)} seconds! Can you beat my time?`);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, '_blank');
+        }
+        
+        function shareToTwitter() {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent(`I scored ${gameState.finalTime.toFixed(3)}s in the A-Z Typing Challenge! Try to beat me: ${window.location.href}`);
+            window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+        }
+        
+        function shareToWhatsApp() {
+            const text = encodeURIComponent(`I scored ${gameState.finalTime.toFixed(3)} seconds in the A-Z Typing Challenge! Can you beat my time? ${window.location.href}`);
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+        }
+        
+        function copyScoreLink() {
+            const text = `I scored ${gameState.finalTime.toFixed(3)} seconds in the A-Z Typing Challenge! Can you beat my time? ${window.location.href}`;
+            navigator.clipboard.writeText(text)
+                .then(() => alert('Score link copied to clipboard!'))
+                .catch(err => console.error('Copy failed:', err));
+        }
+        
+        // ==================== EVENT BINDING ====================
+        function bindEvents() {
+            elements.inputField.addEventListener('input', handleInput);
+            
+            elements.restartBtn.addEventListener('click', resetGame);
+            
+            elements.backBtn.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+            
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    resetGame();
+                }
+                
+                if (event.key === 'Enter' && !gameState.active) {
+                    resetGame();
+                }
+                
+                if (document.activeElement !== elements.inputField && 
+                    !event.ctrlKey && !event.altKey && !event.metaKey) {
+                    elements.inputField.focus();
+                }
+            });
+        }
+        
+        // ==================== START GAME ====================
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
