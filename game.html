@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-Z 極速挑戰 - 遊戲中</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        h1 {
+            color: #0f0;
+            font-size: 1.8rem;
+        }
+        
+        .player-info {
+            color: #888;
+            font-size: 1rem;
+        }
+        
+        #current-letter {
+            font-size: 8rem;
+            font-weight: bold;
+            color: #0f0;
+            margin: 30px 0;
+            text-shadow: 0 0 20px #0f0;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #letter-sequence {
+            font-size: 1.8rem;
+            letter-spacing: 8px;
+            margin: 20px 0;
+            color: #555;
+            min-height: 60px;
+            line-height: 1.8;
+        }
+        
+        .letter-correct {
+            color: #0f0;
+        }
+        
+        .letter-current {
+            color: #fff;
+            background: #222;
+            padding: 0 5px;
+        }
+        
+        .letter-future {
+            color: #555;
+        }
+        
+        #input-field {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.8rem;
+            background: #111;
+            color: #0f0;
+            border: 3px solid #333;
+            text-align: center;
+            margin: 30px 0;
+            outline: none;
+            letter-spacing: 5px;
+        }
+        
+        #input-field:focus {
+            border-color: #0f0;
+            box-shadow: 0 0 10px #0f0;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .stat {
+            background: #111;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            color: #0f0;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 8px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 1rem;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #444;
+            border-color: #0f0;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #restart-btn {
+            background: #333;
+        }
+        
+        #back-btn {
+            background: #555;
+        }
+        
+        .game-status {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            background: #111;
+            color: #888;
+        }
+        
+        .game-status.active {
+            border-color: #0f0;
+            color: #0f0;
+        }
+        
+        .game-status.finished {
+            border-color: #ff0;
+            color: #ff0;
+        }
+        
+        .leaderboard {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .leaderboard h3 {
+            color: #0f0;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        #leaderboard-list {
+            list-style: none;
+        }
+        
+        #leaderboard-list li {
+            padding: 12px;
+            background: #111;
+            margin-bottom: 8px;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .rank {
+            color: #ff0;
+            font-weight: bold;
+            min-width: 40px;
+        }
+        
+        .player {
+            flex-grow: 1;
+            text-align: left;
+            margin-left: 15px;
+        }
+        
+        .time {
+            color: #0f0;
+            font-weight: bold;
+            min-width: 100px;
+            text-align: right;
+        }
+        
+        .api-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            background: #111;
+            border: 1px solid #333;
+            color: #0f0;
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            #current-letter {
+                font-size: 5rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="api-status" id="apiStatus">API: 連線中...</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>A-Z 極速打字挑戰</h1>
+            <div class="player-info">玩家: <span id="playerName">載入中...</span></div>
+        </div>
+        
+        <div id="current-letter">A</div>
+        
+        <div id="letter-sequence">
+            <span class="letter-correct"></span>
+            <span class="letter-current">A</span>
+            <span class="letter-future">B C D E F G H I J K L M N O P Q R S T U V W X Y Z</span>
+        </div>
+        
+        <input type="text" id="input-field" placeholder="輸入上方顯示的字母..." autocomplete="off" autofocus>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="timer">0.000</div>
+                <div class="stat-label">用時 (秒)</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="progress">0%</div>
+                <div class="stat-label">完成進度</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="accuracy">100%</div>
+                <div class="stat-label">準確度</div>
+            </div>
+        </div>
+        
+        <div class="game-status" id="gameStatus">
+            等待開始：請輸入第一個字母 "A"
+        </div>
+        
+        <div class="controls">
+            <button id="restart-btn">重新挑戰</button>
+            <button id="back-btn">返回登入</button>
+        </div>
+        
+        <div class="leaderboard">
+            <h3>🏆 排行榜 (最快完成時間)</h3>
+            <ul id="leaderboard-list">
+                <li>載入中...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 配置區域 ====================
+        // API 設定 - 已經為你設定好
+        const API_CONFIG = {
+            BASE_URL: 'https://keyboard-challenge-api.onrender.com',
+            ENABLED: true, // 設為 false 則使用純本地模式
+            TIMEOUT: 5000
+        };
+        
+        // 遊戲設定
+        const GAME_CONFIG = {
+            LETTERS: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            AUTO_START: true, // 輸入第一個字母自動開始計時
+            AUTO_SUBMIT: true // 完成後自動提交成績
+        };
+        
+        // ==================== 遊戲狀態 ====================
+        let gameState = {
+            active: false,
+            startTime: null,
+            endTime: null,
+            currentIndex: 0,
+            correctInputs: 0,
+            totalInputs: 0,
+            username: '',
+            letters: GAME_CONFIG.LETTERS.split(''),
+            timerInterval: null
+        };
+        
+        // ==================== DOM 元素 ====================
+        const elements = {
+            currentLetter: document.getElementById('current-letter'),
+            letterSequence: document.getElementById('letter-sequence'),
+            inputField: document.getElementById('input-field'),
+            timer: document.getElementById('timer'),
+            progress: document.getElementById('progress'),
+            accuracy: document.getElementById('accuracy'),
+            gameStatus: document.getElementById('gameStatus'),
+            playerName: document.getElementById('playerName'),
+            restartBtn: document.getElementById('restart-btn'),
+            backBtn: document.getElementById('back-btn'),
+            apiStatus: document.getElementById('apiStatus'),
+            leaderboardList: document.getElementById('leaderboard-list')
+        };
+        
+        // ==================== 初始化 ====================
+        async function initGame() {
+            // 1. 獲取玩家名稱
+            gameState.username = localStorage.getItem('typingUsername');
+            if (!gameState.username) {
+                alert('請先登入！');
+                window.location.href = 'index.html';
+                return;
+            }
+            elements.playerName.textContent = gameState.username;
+            
+            // 2. 檢查API狀態
+            await checkApiStatus();
+            
+            // 3. 載入排行榜
+            await loadLeaderboard();
+            
+            // 4. 初始化遊戲顯示
+            updateLetterDisplay();
+            elements.inputField.focus();
+            
+            // 5. 綁定事件
+            bindEvents();
+        }
+        
+        // ==================== API 功能 ====================
+        async function checkApiStatus() {
+            if (!API_CONFIG.ENABLED) {
+                elements.apiStatus.textContent = 'API: 離線模式';
+                elements.apiStatus.style.color = '#888';
+                return false;
+            }
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
+                
+                const response = await fetch(`${API_CONFIG.BASE_URL}/`, {
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    elements.apiStatus.textContent = 'API: 連線正常 ✓';
+                    elements.apiStatus.style.color = '#0f0';
+                    return true;
+                }
+            } catch (error) {
+                console.warn('API連接失敗，切換到本地模式:', error);
+                elements.apiStatus.textContent = 'API: 離線模式';
+                elements.apiStatus.style.color = '#f00';
+                API_CONFIG.ENABLED = false;
+            }
+            return false;
+        }
+        
+        async function submitScore(timeInSeconds) {
+            if (!API_CONFIG.ENABLED) {
+                saveScoreLocally(timeInSeconds);
+                return { success: false, local: true };
+            }
+            
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/api/score`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: gameState.username,
+                        time: timeInSeconds,
+                        accuracy: calculateAccuracy(),
+                        date: new Date().toISOString()
+                    })
+                });
+                
+                if (response.ok) {
+                    return { success: true };
+                }
+            } catch (error) {
+                console.warn('提交分數失敗，保存到本地:', error);
+                saveScoreLocally(timeInSeconds);
+                return { success: false, local: true };
+            }
+            
+            return { success: false };
+        }
+        
+        async function loadLeaderboard() {
+            // 先嘗試從API載入
+            if (API_CONFIG.ENABLED) {
+                try {
+                    const response = await fetch(`${API_CONFIG.BASE_URL}/api/leaderboard`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.leaderboard && data.leaderboard.length > 0) {
+                            displayLeaderboard(data.leaderboard);
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    console.warn('載入API排行榜失敗:', error);
+                }
+            }
+            
+            // 載入本地排行榜
+            loadLocalLeaderboard();
+        }
+        
+        function saveScoreLocally(timeInSeconds) {
+            const scores = JSON.parse(localStorage.getItem('localTypingScores') || '[]');
+            scores.push({
+                name: gameState.username,
+                time: timeInSeconds,
+                accuracy: calculateAccuracy(),
+                date: new Date().toISOString()
+            });
+            
+            // 只保留最好的50個成績
+            scores.sort((a, b) => a.time - b.time);
+            const topScores = scores.slice(0, 50);
+            localStorage.setItem('localTypingScores', JSON.stringify(topScores));
+            
+            // 更新顯示
+            displayLeaderboard(topScores);
+        }
+        
+        function loadLocalLeaderboard() {
+            const scores = JSON.parse(localStorage.getItem('localTypingScores') || '[]');
+            displayLeaderboard(scores);
+        }
+        
+        function displayLeaderboard(scores) {
+            if (!scores || scores.length === 0) {
+                elements.leaderboardList.innerHTML = '<li>暫無紀錄，成為第一個挑戰者！</li>';
+                return;
+            }
+            
+            // 按時間排序（最快到最慢）
+            scores.sort((a, b) => a.time - b.time);
+            
+            elements.leaderboardList.innerHTML = '';
+            scores.slice(0, 20).forEach((score, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="rank">#${index + 1}</span>
+                    <span class="player">${score.name}</span>
+                    <span class="time">${score.time.toFixed(3)}秒</span>
+                `;
+                elements.leaderboardList.appendChild(li);
+            });
+        }
+        
+        // ==================== 遊戲邏輯 ====================
+        function startGame() {
+            if (gameState.active) return;
+            
+            gameState.active = true;
+            gameState.startTime = performance.now();
+            gameState.endTime = null;
+            
+            elements.gameStatus.textContent = '挑戰進行中...';
+            elements.gameStatus.className = 'game-status active';
+            
+            // 開始計時器
+            gameState.timerInterval = setInterval(updateTimer, 10);
+            
+            // 更新顯示
+            updateLetterDisplay();
+        }
+        
+        function endGame() {
+            if (!gameState.active) return;
+            
+            gameState.active = false;
+            gameState.endTime = performance.now();
+            
+            clearInterval(gameState.timerInterval);
+            
+            // 計算總用時
+            const totalTime = (gameState.endTime - gameState.startTime) / 1000;
+            
+            // 更新狀態顯示
+            elements.gameStatus.textContent = `挑戰完成！用時: ${totalTime.toFixed(3)}秒`;
+            elements.gameStatus.className = 'game-status finished';
+            
+            // 禁用輸入框
+            elements.inputField.disabled = true;
+            
+            // 自動提交成績
+            if (GAME_CONFIG.AUTO_SUBMIT) {
+                submitScore(totalTime).then(result => {
+                    if (result.success) {
+                        elements.gameStatus.textContent += ' (成績已提交)';
+                    } else if (result.local) {
+                        elements.gameStatus.textContent += ' (成績保存到本地)';
+                    }
+                    // 重新載入排行榜
+                    loadLeaderboard();
+                });
+            }
+        }
+        
+        function resetGame() {
+            // 重置遊戲狀態
+            gameState.active = false;
+            gameState.startTime = null;
+            gameState.endTime = null;
+            gameState.currentIndex = 0;
+            gameState.correctInputs = 0;
+            gameState.totalInputs = 0;
+            
+            // 清除計時器
+            clearInterval(gameState.timerInterval);
+            
+            // 重置顯示
+            elements.timer.textContent = '0.000';
+            elements.progress.textContent = '0%';
+            elements.accuracy.textContent = '100%';
+            elements.inputField.value = '';
+            elements.inputField.disabled = false;
+            elements.gameStatus.textContent = '等待開始：請輸入第一個字母 "A"';
+            elements.gameStatus.className = 'game-status';
+            
+            // 更新字母顯示
+            updateLetterDisplay();
+            
+            // 聚焦輸入框
+            elements.inputField.focus();
+        }
+        
+        function updateTimer() {
+            if (!gameState.active || !gameState.startTime) return;
+            
+            const currentTime = performance.now();
+            const elapsed = (currentTime - gameState.startTime) / 1000;
+            elements.timer.textContent = elapsed.toFixed(3);
+        }
+        
+        function updateLetterDisplay() {
+            const currentLetter = gameState.letters[gameState.currentIndex];
+            
+            // 更新當前字母
+            elements.currentLetter.textContent = currentLetter;
+            
+            // 更新字母序列
+            const correctLetters = gameState.letters.slice(0, gameState.currentIndex);
+            const futureLetters = gameState.letters.slice(gameState.currentIndex + 1);
+            
+            elements.letterSequence.innerHTML = `
+                <span class="letter-correct">${correctLetters.join(' ')}${correctLetters.length > 0 ? ' ' : ''}</span>
+                <span class="letter-current">${currentLetter}</span>
+                <span class="letter-future">${futureLetters.length > 0 ? ' ' + futureLetters.join(' ') : ''}</span>
+            `;
+            
+            // 更新進度
+            const progress = Math.round((gameState.currentIndex / gameState.letters.length) * 100);
+            elements.progress.textContent = `${progress}%`;
+        }
+        
+        function calculateAccuracy() {
+            return gameState.totalInputs > 0 ? 
+                Math.round((gameState.correctInputs / gameState.totalInputs) * 100) : 100;
+        }
+        
+        function handleInput(event) {
+            const input = event.target.value.toUpperCase();
+            
+            if (!input) return;
+            
+            const expectedLetter = gameState.letters[gameState.currentIndex];
+            gameState.totalInputs++;
+            
+            // 檢查輸入是否正確
+            if (input === expectedLetter) {
+                gameState.correctInputs++;
+                
+                // 如果是第一個字母且遊戲尚未開始，則開始遊戲
+                if (gameState.currentIndex === 0 && !gameState.active && GAME_CONFIG.AUTO_START) {
+                    startGame();
+                }
+                
+                // 移動到下一個字母
+                gameState.currentIndex++;
+                
+                // 檢查是否完成
+                if (gameState.currentIndex >= gameState.letters.length) {
+                    endGame();
+                } else {
+                    updateLetterDisplay();
+                }
+                
+                // 清空輸入框
+                event.target.value = '';
+                
+                // 更新準確度
+                elements.accuracy.textContent = `${calculateAccuracy()}%`;
+            } else {
+                // 輸入錯誤，只清空輸入框
+                event.target.value = '';
+                elements.accuracy.textContent = `${calculateAccuracy()}%`;
+            }
+        }
+        
+        // ==================== 事件綁定 ====================
+        function bindEvents() {
+            // 輸入框事件
+            elements.inputField.addEventListener('input', handleInput);
+            
+            // 重新挑戰按鈕
+            elements.restartBtn.addEventListener('click', resetGame);
+            
+            // 返回登入按鈕
+            elements.backBtn.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+            
+            // 鍵盤快捷鍵
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    resetGame();
+                }
+                
+                if (event.key === 'Enter' && !gameState.active) {
+                    resetGame();
+                }
+                
+                // 確保輸入框永遠有焦點（除非在輸入）
+                if (document.activeElement !== elements.inputField && 
+                    !event.ctrlKey && !event.altKey && !event.metaKey) {
+                    elements.inputField.focus();
+                }
+            });
+        }
+        
+        // ==================== 啟動遊戲 ====================
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
