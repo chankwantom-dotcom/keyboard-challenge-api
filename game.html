@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-Z Typing Challenge - Play Now!</title>
+    <style>
+        /* 基本樣式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #333;
+        }
+        
+        h1 {
+            color: #00ff88;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+        
+        .subtitle {
+            color: #888;
+            font-size: 1rem;
+        }
+        
+        /* 廣告容器樣式 */
+        .ad-container {
+            margin: 25px 0;
+            padding: 15px;
+            background: #222;
+            border: 2px dashed #444;
+            border-radius: 10px;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 遊戲區域 */
+        #current-letter {
+            font-size: 120px;
+            font-weight: bold;
+            color: #00ff88;
+            text-align: center;
+            margin: 30px 0;
+            text-shadow: 0 0 20px #00ff88;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #letter-sequence {
+            font-size: 1.5rem;
+            letter-spacing: 8px;
+            color: #555;
+            text-align: center;
+            margin: 20px 0;
+            min-height: 60px;
+        }
+        
+        .letter-correct { color: #00ff88; }
+        .letter-current { 
+            color: #fff; 
+            background: #333; 
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .letter-future { color: #555; }
+        
+        .keyboard-hint {
+            text-align: center;
+            color: #888;
+            font-size: 1.2rem;
+            margin: 20px 0;
+            padding: 15px;
+            background: #222;
+            border-radius: 10px;
+        }
+        
+        .keyboard-hint span {
+            color: #00ff88;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        /* 虛擬鍵盤 */
+        .virtual-keyboard {
+            margin: 25px 0;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .virtual-keyboard {
+                grid-template-columns: repeat(7, 1fr);
+            }
+        }
+        
+        .keyboard-key {
+            background: #222;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 1.3rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .keyboard-key:hover {
+            background: #333;
+            transform: scale(1.05);
+        }
+        
+        .keyboard-key:active {
+            background: #00ff88;
+            color: #000;
+            transform: scale(0.95);
+        }
+        
+        /* 遊戲統計 */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .stat-box {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+        
+        /* 控制按鈕 */
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 25px 0;
+        }
+        
+        button {
+            padding: 15px 30px;
+            background: #333;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: #444;
+            transform: translateY(-3px);
+        }
+        
+        #restart-btn {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        #restart-btn:hover {
+            background: #00cc6a;
+        }
+        
+        /* 遊戲狀態 */
+        .game-status {
+            text-align: center;
+            padding: 20px;
+            background: #222;
+            border-radius: 10px;
+            margin: 20px 0;
+            color: #888;
+        }
+        
+        .game-status.active {
+            color: #00ff88;
+            border: 2px solid #00ff88;
+        }
+        
+        .game-status.finished {
+            color: #ffcc00;
+            border: 2px solid #ffcc00;
+        }
+        
+        /* 分享區塊 */
+        .share-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #222 0%, #333 100%);
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+        
+        .share-section h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+        }
+        
+        /* 賺錢提示 */
+        .earn-tip {
+            margin: 20px 0;
+            padding: 15px;
+            background: #222;
+            border-left: 5px solid #00ff88;
+            border-radius: 8px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        /* 排行榜 */
+        .leaderboard {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #333;
+        }
+        
+        .leaderboard h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        #leaderboard-list {
+            list-style: none;
+        }
+        
+        #leaderboard-list li {
+            background: #222;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* 移動設備優化 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            #current-letter {
+                font-size: 80px;
+                height: 100px;
+            }
+            
+            .virtual-keyboard {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 頁首 -->
+        <div class="header">
+            <h1>A-Z TYPING CHALLENGE</h1>
+            <p class="subtitle">Test your typing speed and accuracy!</p>
+        </div>
+        
+        <!-- 頂部廣告區 - 回應式廣告 -->
+        <div class="ad-container">
+            <!-- 遊戲頂部廣告 -->
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-3893689963042024"
+                 data-ad-slot="5236251781"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+        </div>
+        
+        <!-- 遊戲主體 -->
+        <div id="current-letter">A</div>
+        
+        <div id="letter-sequence">
+            <span class="letter-correct"></span>
+            <span class="letter-current">A</span>
+            <span class="letter-future">B C D E F G H I J K L M N O P Q R S T U V W X Y Z</span>
+        </div>
+        
+        <div class="keyboard-hint">
+            Press <span id="current-key">A</span> on your keyboard or click the virtual keys below
+        </div>
+        
+        <!-- 虛擬鍵盤 -->
+        <div class="virtual-keyboard" id="virtualKeyboard">
+            <!-- 鍵盤將由JavaScript生成 -->
+        </div>
+        
+        <!-- 中間廣告區 - 矩形廣告 -->
+        <div class="ad-container" style="min-height: 250px;">
+            <!-- 中間矩形廣告 -->
+            <ins class="adsbygoogle"
+                 style="display:block; text-align:center;"
+                 data-ad-layout="in-article"
+                 data-ad-format="fluid"
+                 data-ad-client="ca-pub-3893689963042024"
+                 data-ad-slot="5236251781"></ins>
+        </div>
+        
+        <!-- 遊戲統計 -->
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="timer">0.000</div>
+                <div class="stat-label">TIME (seconds)</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="progress">0%</div>
+                <div class="stat-label">PROGRESS</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="accuracy">100%</div>
+                <div class="stat-label">ACCURACY</div>
+            </div>
+        </div>
+        
+        <!-- 遊戲狀態 -->
+        <div class="game-status" id="gameStatus">
+            Waiting to start: Press the "A" key
+        </div>
+        
+        <!-- 控制按鈕 -->
+        <div class="controls">
+            <button id="restart-btn">RESTART GAME</button>
+            <button onclick="shareScore()">SHARE SCORE</button>
+        </div>
+        
+        <!-- 賺錢提示 -->
+        <div class="earn-tip">
+            💰 <strong>Support this game:</strong> Please consider clicking on an advertisement to help keep this game free!
+            Every click helps support future development. Thank you! 🙏
+        </div>
+        
+        <!-- 分享區塊 -->
+        <div class="share-section" id="shareSection">
+            <h3>🎉 CHALLENGE COMPLETE!</h3>
+            <p style="font-size: 1.2rem; margin-bottom: 20px;">Your time: <span id="shareTime" style="color: #00ff88; font-weight: bold;">0.000</span> seconds</p>
+            <div class="controls">
+                <button onclick="copyScore()">📋 COPY SCORE</button>
+                <button onclick="shareTwitter()">🐦 SHARE ON TWITTER</button>
+            </div>
+        </div>
+        
+        <!-- 底部廣告區 - 錨定廣告（移動設備） -->
+        <div class="ad-container" style="min-height: 100px;">
+            <!-- 底部廣告 -->
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-format="autorelaxed"
+                 data-ad-client="ca-pub-3893689963042024"
+                 data-ad-slot="5236251781"></ins>
+        </div>
+        
+        <!-- 排行榜 -->
+        <div class="leaderboard">
+            <h3>🏆 TOP SCORES</h3>
+            <ul id="leaderboard-list">
+                <li>No scores yet. Be the first!</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- AdSense 腳本 (只在頁面加載一次) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3893689963042024"
+            crossorigin="anonymous"></script>
+
+    <!-- 遊戲JavaScript -->
+    <script>
+        // ==================== 遊戲配置 ====================
+        const GAME_CONFIG = {
+            LETTERS: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            AUTO_START: true
+        };
+        
+        // ==================== 遊戲狀態 ====================
+        let gameState = {
+            active: false,
+            startTime: null,
+            endTime: null,
+            currentIndex: 0,
+            correctInputs: 0,
+            totalInputs: 0,
+            playerName: 'Guest',
+            letters: GAME_CONFIG.LETTERS.split(''),
+            timerInterval: null,
+            finalTime: 0,
+            gameCompleted: false
+        };
+        
+        // ==================== DOM元素 ====================
+        const elements = {
+            currentLetter: document.getElementById('current-letter'),
+            letterSequence: document.getElementById('letter-sequence'),
+            timer: document.getElementById('timer'),
+            progress: document.getElementById('progress'),
+            accuracy: document.getElementById('accuracy'),
+            gameStatus: document.getElementById('gameStatus'),
+            currentKey: document.getElementById('current-key'),
+            virtualKeyboard: document.getElementById('virtualKeyboard'),
+            shareSection: document.getElementById('shareSection'),
+            shareTime: document.getElementById('shareTime'),
+            restartBtn: document.getElementById('restart-btn'),
+            leaderboardList: document.getElementById('leaderboard-list')
+        };
+        
+        // ==================== 初始化遊戲 ====================
+        function initGame() {
+            // 獲取玩家名稱
+            const savedName = localStorage.getItem('typingPlayerName');
+            if (savedName) {
+                gameState.playerName = savedName;
+            }
+            
+            // 創建虛擬鍵盤
+            createVirtualKeyboard();
+            
+            // 更新顯示
+            updateLetterDisplay();
+            updateCurrentKeyDisplay();
+            
+            // 綁定事件
+            bindEvents();
+            
+            // 加載排行榜
+            loadLeaderboard();
+            
+            // 初始化AdSense廣告
+            initAds();
+        }
+        
+        // ==================== 初始化廣告 ====================
+        function initAds() {
+            // 確保AdSense腳本已加載
+            if (typeof adsbygoogle !== 'undefined') {
+                // 推入所有廣告單元
+                try {
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                } catch (e) {
+                    console.log('AdSense初始化中...');
+                }
+            }
+            
+            // 延遲廣告加載以確保頁面穩定
+            setTimeout(() => {
+                if (typeof adsbygoogle !== 'undefined') {
+                    try {
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    } catch (e) {
+                        console.log('廣告延遲加載完成');
+                    }
+                }
+            }, 1000);
+            
+            // 追蹤廣告展示
+            let adImpressions = parseInt(localStorage.getItem('adImpressions') || '0');
+            adImpressions++;
+            localStorage.setItem('adImpressions', adImpressions.toString());
+            
+            // 每10次遊戲顯示提示
+            if (adImpressions % 10 === 0) {
+                showAdReminder();
+            }
+        }
+        
+        function showAdReminder() {
+            const reminder = document.createElement('div');
+            reminder.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #222;
+                color: #00ff88;
+                padding: 15px;
+                border-radius: 10px;
+                border: 2px solid #00ff88;
+                z-index: 1000;
+                max-width: 90%;
+                text-align: center;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            `;
+            reminder.innerHTML = `
+                <p style="margin: 0 0 10px 0; font-weight: bold;">💝 Support This Game!</p>
+                <p style="margin: 0 0 10px 0; font-size: 0.9rem;">
+                    Please consider clicking an ad to help keep this game free!
+                </p>
+                <button onclick="this.parentElement.remove()" 
+                        style="padding: 5px 15px; background: #00ff88; color: #000; border: none; border-radius: 5px; font-weight: bold;">
+                    OK
+                </button>
+            `;
+            document.body.appendChild(reminder);
+            
+            // 10秒後自動移除
+            setTimeout(() => {
+                if (reminder.parentElement) {
+                    reminder.remove();
+                }
+            }, 10000);
+        }
+        
+        // ==================== 創建虛擬鍵盤 ====================
+        function createVirtualKeyboard() {
+            const keyboardLayout = [
+                'Q','W','E','R','T','Y','U','I','O','P',
+                'A','S','D','F','G','H','J','K','L',
+                'Z','X','C','V','B','N','M'
+            ];
+            
+            elements.virtualKeyboard.innerHTML = '';
+            
+            keyboardLayout.forEach(letter => {
+                const key = document.createElement('div');
+                key.className = 'keyboard-key';
+                key.textContent = letter;
+                key.dataset.key = letter;
+                
+                // 點擊事件
+                key.addEventListener('click', () => processKey(letter));
+                
+                // 觸摸事件（移動設備）
+                key.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    key.style.background = '#00ff88';
+                    key.style.color = '#000';
+                    processKey(letter);
+                });
+                
+                key.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    setTimeout(() => {
+                        key.style.background = '';
+                        key.style.color = '';
+                    }, 200);
+                });
+                
+                elements.virtualKeyboard.appendChild(key);
+            });
+        }
+        
+        // ==================== 遊戲邏輯 ====================
+        function startGame() {
+            if (gameState.active) return;
+            
+            gameState.active = true;
+            gameState.gameCompleted = false;
+            gameState.startTime = performance.now();
+            gameState.endTime = null;
+            
+            elements.gameStatus.textContent = 'Challenge in progress...';
+            elements.gameStatus.className = 'game-status active';
+            
+            gameState.timerInterval = setInterval(updateTimer, 10);
+            
+            updateLetterDisplay();
+            updateCurrentKeyDisplay();
+        }
+        
+        function endGame() {
+            if (!gameState.active) return;
+            
+            gameState.active = false;
+            gameState.gameCompleted = true;
+            gameState.endTime = performance.now();
+            
+            clearInterval(gameState.timerInterval);
+            
+            const totalTime = (gameState.endTime - gameState.startTime) / 1000;
+            gameState.finalTime = totalTime;
+            
+            // 確保進度顯示為100%
+            elements.progress.textContent = '100%';
+            
+            // 顯示分享區塊
+            elements.shareTime.textContent = totalTime.toFixed(3);
+            elements.shareSection.style.display = 'block';
+            
+            elements.gameStatus.textContent = `Challenge complete! Time: ${totalTime.toFixed(3)} seconds`;
+            elements.gameStatus.className = 'game-status finished';
+            
+            // 保存分數
+            saveScore(totalTime);
+            
+            // 顯示感謝訊息（包含廣告提示）
+            setTimeout(() => {
+                showThankYouMessage(totalTime);
+            }, 1000);
+        }
+        
+        function showThankYouMessage(time) {
+            const message = document.createElement('div');
+            message.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: #1a1a1a;
+                color: #fff;
+                padding: 25px;
+                border-radius: 15px;
+                border: 3px solid #00ff88;
+                z-index: 1001;
+                max-width: 400px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            `;
+            message.innerHTML = `
+                <h3 style="color: #00ff88; margin-bottom: 15px;">🎉 AMAZING TIME! 🎉</h3>
+                <p style="font-size: 1.5rem; margin-bottom: 10px;">${time.toFixed(3)} seconds</p>
+                <p style="color: #888; margin-bottom: 20px;">
+                    That's an impressive score!
+                </p>
+                <p style="color: #ffcc00; margin-bottom: 20px; font-size: 0.9rem;">
+                    💰 <strong>Please consider clicking an ad to support this game!</strong>
+                </p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="this.parentElement.parentElement.remove()" 
+                            style="padding: 10px 20px; background: #333; color: #fff; border: none; border-radius: 5px;">
+                        Continue
+                    </button>
+                    <button onclick="shareScore()" 
+                            style="padding: 10px 20px; background: #00ff88; color: #000; border: none; border-radius: 5px; font-weight: bold;">
+                        Share Score
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(message);
+            
+            // 點擊背景關閉
+            message.addEventListener('click', (e) => {
+                if (e.target === message) {
+                    message.remove();
+                }
+            });
+        }
+        
+        function processKey(key) {
+            // 如果遊戲已完成，按A重新開始
+            if (gameState.gameCompleted && key === 'A') {
+                resetGame();
+                startGame();
+                return;
+            }
+            
+            // 如果遊戲未開始且按的是A，開始遊戲
+            if (!gameState.active && key === 'A') {
+                startGame();
+                // 繼續處理A鍵
+            }
+            
+            // 如果遊戲未激活，不處理其他按鍵
+            if (!gameState.active) return;
+            
+            const expectedLetter = gameState.letters[gameState.currentIndex];
+            
+            gameState.totalInputs++;
+            
+            if (key === expectedLetter) {
+                gameState.correctInputs++;
+                
+                gameState.currentIndex++;
+                
+                if (gameState.currentIndex >= gameState.letters.length) {
+                    endGame();
+                } else {
+                    updateLetterDisplay();
+                    updateCurrentKeyDisplay();
+                }
+                
+                elements.accuracy.textContent = `${calculateAccuracy()}%`;
+            } else {
+                elements.accuracy.textContent = `${calculateAccuracy()}%`;
+            }
+        }
+        
+        function handleKeyPress(event) {
+            // 忽略功能鍵
+            if (event.ctrlKey || event.altKey || event.metaKey) return;
+            
+            // 只處理字母鍵
+            if (event.key.length === 1 && /[a-zA-Z]/.test(event.key)) {
+                const pressedKey = event.key.toUpperCase();
+                processKey(pressedKey);
+            }
+            
+            // ESC鍵重置遊戲
+            if (event.key === 'Escape') {
+                resetGame();
+            }
+        }
+        
+        function updateTimer() {
+            if (!gameState.active || !gameState.startTime) return;
+            
+            const currentTime = performance.now();
+            const elapsed = (currentTime - gameState.startTime) / 1000;
+            elements.timer.textContent = elapsed.toFixed(3);
+        }
+        
+        function updateLetterDisplay() {
+            const currentLetter = gameState.letters[gameState.currentIndex];
+            
+            elements.currentLetter.textContent = currentLetter;
+            
+            const correctLetters = gameState.letters.slice(0, gameState.currentIndex);
+            const futureLetters = gameState.letters.slice(gameState.currentIndex + 1);
+            
+            elements.letterSequence.innerHTML = `
+                <span class="letter-correct">${correctLetters.join(' ')}${correctLetters.length > 0 ? ' ' : ''}</span>
+                <span class="letter-current">${currentLetter}</span>
+                <span class="letter-future">${futureLetters.length > 0 ? ' ' + futureLetters.join(' ') : ''}</span>
+            `;
+            
+            const progress = Math.min(Math.round((gameState.currentIndex / gameState.letters.length) * 100), 100);
+            elements.progress.textContent = `${progress}%`;
+        }
+        
+        function updateCurrentKeyDisplay() {
+            const currentLetter = gameState.letters[gameState.currentIndex];
+            elements.currentKey.textContent = currentLetter;
+        }
+        
+        function calculateAccuracy() {
+            return gameState.totalInputs > 0 ? 
+                Math.round((gameState.correctInputs / gameState.totalInputs) * 100) : 100;
+        }
+        
+        function resetGame() {
+            gameState.active = false;
+            gameState.gameCompleted = false;
+            gameState.startTime = null;
+            gameState.endTime = null;
+            gameState.currentIndex = 0;
+            gameState.correctInputs = 0;
+            gameState.totalInputs = 0;
+            
+            clearInterval(gameState.timerInterval);
+            
+            elements.timer.textContent = '0.000';
+            elements.progress.textContent = '0%';
+            elements.accuracy.textContent = '100%';
+            elements.gameStatus.textContent = 'Waiting to start: Press the "A" key';
+            elements.gameStatus.className = 'game-status';
+            elements.shareSection.style.display = 'none';
+            
+            updateLetterDisplay();
+            updateCurrentKeyDisplay();
+        }
+        
+        function saveScore(time) {
+            const scores = JSON.parse(localStorage.getItem('typingScores') || '[]');
+            
+            scores.push({
+                name: gameState.playerName,
+                time: time,
+                accuracy: calculateAccuracy(),
+                date: new Date().toISOString()
+            });
+            
+            // 按時間排序，保留最快的前20個分數
+            scores.sort((a, b) => a.time - b.time);
+            const topScores = scores.slice(0, 20);
+            localStorage.setItem('typingScores', JSON.stringify(topScores));
+            
+            loadLeaderboard();
+        }
+        
+        function loadLeaderboard() {
+            const scores = JSON.parse(localStorage.getItem('typingScores') || '[]');
+            
+            if (scores.length === 0) {
+                elements.leaderboardList.innerHTML = '<li>No scores yet. Play to be the first!</li>';
+                return;
+            }
+            
+            elements.leaderboardList.innerHTML = '';
+            
+            scores.slice(0, 10).forEach((score, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span style="color: #ffcc00; font-weight: bold;">#${index + 1}</span>
+                    <span>${score.name}</span>
+                    <span style="color: #00ff88; font-weight: bold;">${score.time.toFixed(3)}s</span>
+                `;
+                elements.leaderboardList.appendChild(li);
+            });
+        }
+        
+        // ==================== 分享功能 ====================
+        function shareScore() {
+            const scoreText = `I scored ${gameState.finalTime.toFixed(3)} seconds in the A-Z Typing Challenge! Can you beat my time?`;
+            
+            // 複製到剪貼簿
+            navigator.clipboard.writeText(scoreText + ' ' + window.location.href)
+                .then(() => {
+                    alert('Score copied to clipboard! Share it with your friends!');
+                })
+                .catch(err => {
+                    console.error('Copy failed:', err);
+                });
+        }
+        
+        function copyScore() {
+            const scoreText = `I scored ${gameState.finalTime.toFixed(3)} seconds in the A-Z Typing Challenge!`;
+            navigator.clipboard.writeText(scoreText)
+                .then(() => {
+                    alert('Score copied! Share it anywhere!');
+                });
+        }
+        
+        function shareTwitter() {
+            const text = encodeURIComponent(`I scored ${gameState.finalTime.toFixed(3)}s in the A-Z Typing Challenge! Try to beat me!`);
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+        }
+        
+        // ==================== 事件綁定 ====================
+        function bindEvents() {
+            // 鍵盤事件
+            document.addEventListener('keydown', handleKeyPress);
+            
+            // 重啟按鈕
+            elements.restartBtn.addEventListener('click', resetGame);
+            
+            // 防止移動設備縮放
+            document.addEventListener('touchstart', function(event) {
+                if (event.touches.length > 1) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+        }
+        
+        // ==================== 頁面加載完成後初始化 ====================
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
